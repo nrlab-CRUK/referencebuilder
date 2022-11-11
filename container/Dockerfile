@@ -58,6 +58,8 @@ RUN cd ${BUILD_DIR}/jellyfish-${JELLYFISH}; \
     make && \
     make install
 
+# This pipeline's Java programs.
+COPY nf-referencebuilder.jar /opt
 
 ## Clean up
 RUN cd / && rm -rf ${BUILD_DIR}

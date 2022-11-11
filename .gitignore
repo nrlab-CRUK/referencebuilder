@@ -1,9 +1,11 @@
 *.sif
 *_sandbox
 target/
+*.jar
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.next
+dependency-reduced-pom.xml
 release.properties
 **/*credentials.properties
 .project

@@ -84,7 +84,7 @@ public class RecreateFasta implements Callable<Integer>
             description = "File to write the output to.")
     File outputFile;
 
-    @Option(names = { "t", "temp-dir" }, required = true, paramLabel = "directory",
+    @Option(names = { "-t", "--temp-dir" }, required = true, paramLabel = "directory",
             description = "The temporary directory to work with.")
     File tempDir;
 

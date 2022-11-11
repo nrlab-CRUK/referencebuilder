@@ -1,4 +1,4 @@
-include { assemblyPath; filenameRoot } from '../functions/functions'
+include { assemblyPath; filenameRoot; javaMemMB } from '../functions/functions'
 include { CreateSequenceDictionary as sequenceDictionary } from '../processes/picard'
 
 process fetchFasta
@@ -12,36 +12,33 @@ process fetchFasta
         tuple val(id), val(genomeInfo), path(fastaFile)
 
     shell:
-        fastaFile = filenameRoot(genomeInfo) + ".fa.gz"
+        fastaFile = "downloaded.fa.gz"
 
         """
         curl -s -o !{fastaFile} "!{genomeInfo['url.fasta']}"
         """
 }
 
-// This one will recreate the file, but for now just uncompress it.
 process recreateFasta
 {
-    memory '4MB'
+    publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'
 
     input:
         tuple val(id), val(genomeInfo), path(fastaFile)
 
     output:
-        tuple val(id), val(genomeInfo), path(uncompressedFile)
+        tuple val(id), val(genomeInfo), path(correctedFile)
 
     shell:
-        uncompressedFile = filenameRoot(genomeInfo) + ".fa"
+        javaMem = javaMemMB(task)
+        correctedFile = filenameRoot(genomeInfo) + ".fa"
 
-        """
-        zcat !{fastaFile} > !{uncompressedFile}
-        """
-
+        template "fasta/RecreateFasta.sh"
 }
 
 process indexFasta
 {
-    publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'
+    publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy', pattern: '*.fai'
 
     input:
         tuple val(id), val(genomeInfo), path(fastaFile)
@@ -64,7 +61,7 @@ process sizesFile
 {
     memory '4MB'
 
-    publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'
+    publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy', pattern: '*.sizes'
 
     input:
         tuple val(id), val(genomeInfo), path(fastaFile), path(sequenceDictionary)
@@ -97,7 +94,7 @@ process canonicalChromosomes
 {
     memory '4MB'
 
-    publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'
+    publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy', pattern: '*.canonical'
 
     input:
         tuple val(id), val(genomeInfo), path(fastaFile), path(sizesFile)
