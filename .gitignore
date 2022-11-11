@@ -1,3 +1,14 @@
-.project
 *.sif
 *_sandbox
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.next
+release.properties
+**/*credentials.properties
+.project
+.classpath
+.settings
+.pydevproject
+svn-commit*
+.DS_Store
