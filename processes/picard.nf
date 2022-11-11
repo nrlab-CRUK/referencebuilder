@@ -76,17 +76,16 @@ process CreateSequenceDictionary
     label "picard"
 
     publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'
-    
+
     input:
         tuple val(id), val(genomeInfo), path(fastaFile)
 
     output:
-        tuple val(id), val(genomeInfo), path(fastaFile), emit: fasta
-        path(sequenceDictionary)
-        
+        tuple val(id), val(genomeInfo), path(fastaFile), path(sequenceDictionary)
+
     shell:
         javaMem = javaMemMB(task)
         sequenceDictionary = filenameRoot(genomeInfo) + ".dict"
-        
+
         template "picard/CreateSequenceDictionary.sh"
 }

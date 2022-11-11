@@ -15,6 +15,6 @@ workflow
             propsFile.withReader { props.load(it) }
             tuple "${props['name.scientific']} ${props['version']}", props
         }
-    
+
     fastaWF(genomeInfoChannel)
 }
