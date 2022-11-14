@@ -1,8 +1,6 @@
 /*
- * Picard tools.
+ * Picard functions.
  */
-
-include { assemblyPath; filenameRoot; javaMemMB } from '../functions/functions'
 
 /**
  * Calculate the maximum number of reads to hold in RAM for Picard sorting
@@ -66,26 +64,4 @@ def maxReadsInRam(availableMB, readLength)
     final def totalReads = availableMB * readsPerMB    // mb * reads/mb to give reads
 
     return totalReads as long
-}
-
-/*
- * Run Picard's 'CreateSequenceDictionary'.
- */
-process CreateSequenceDictionary
-{
-    label "picard"
-
-    publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'
-
-    input:
-        tuple val(id), val(genomeInfo), path(fastaFile)
-
-    output:
-        tuple val(id), val(genomeInfo), path(fastaFile), path(sequenceDictionary)
-
-    shell:
-        javaMem = javaMemMB(task)
-        sequenceDictionary = filenameRoot(genomeInfo) + ".dict"
-
-        template "picard/CreateSequenceDictionary.sh"
 }

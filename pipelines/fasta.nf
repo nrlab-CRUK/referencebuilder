@@ -1,15 +1,15 @@
-include { assemblyPath; filenameRoot; javaMemMB } from '../functions/functions'
-include { CreateSequenceDictionary as sequenceDictionary } from '../processes/picard'
+include { assemblyPath; javaMemMB } from '../functions/functions'
+include { maxReadsInRam } from '../functions/picard'
 
 process fetchFasta
 {
     memory '4MB'
 
     input:
-        tuple val(id), val(genomeInfo)
+        val(genomeInfo)
 
     output:
-        tuple val(id), val(genomeInfo), path(fastaFile)
+        tuple val(genomeInfo), path(fastaFile)
 
     shell:
         fastaFile = "downloaded.fa.gz"
@@ -24,14 +24,14 @@ process recreateFasta
     publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'
 
     input:
-        tuple val(id), val(genomeInfo), path(fastaFile)
+        tuple val(genomeInfo), path(fastaFile)
 
     output:
-        tuple val(id), val(genomeInfo), path(correctedFile)
+        tuple val(genomeInfo), path(correctedFile)
 
     shell:
         javaMem = javaMemMB(task)
-        correctedFile = filenameRoot(genomeInfo) + ".fa"
+        correctedFile = "${genomeInfo.base}.fa"
 
         template "fasta/RecreateFasta.sh"
 }
@@ -41,10 +41,10 @@ process indexFasta
     publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy', pattern: '*.fai'
 
     input:
-        tuple val(id), val(genomeInfo), path(fastaFile)
+        tuple val(genomeInfo), path(fastaFile)
 
     output:
-        tuple val(id), val(genomeInfo), path(fastaFile), path(indexFile)
+        tuple val(genomeInfo), path(fastaFile), path(indexFile)
 
     shell:
         indexFile = fastaFile.name + ".fai"
@@ -52,6 +52,29 @@ process indexFasta
         """
         !{params.SAMTOOLS} faidx !{fastaFile}
         """
+}
+
+
+/*
+ * Run Picard's 'CreateSequenceDictionary'.
+ */
+process sequenceDictionary
+{
+    label "picard"
+
+    publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'
+
+    input:
+        tuple val(genomeInfo), path(fastaFile)
+
+    output:
+        tuple val(genomeInfo), path(fastaFile), path(sequenceDictionary)
+
+    shell:
+        javaMem = javaMemMB(task)
+        sequenceDictionary = "${genomeInfo.base}.dict"
+
+        template "picard/CreateSequenceDictionary.sh"
 }
 
 /*
@@ -64,13 +87,13 @@ process sizesFile
     publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy', pattern: '*.sizes'
 
     input:
-        tuple val(id), val(genomeInfo), path(fastaFile), path(sequenceDictionary)
+        tuple val(genomeInfo), path(fastaFile), path(sequenceDictionary)
 
     output:
-        tuple val(id), val(genomeInfo), path(fastaFile), path(sizesFile)
+        tuple val(genomeInfo), path(fastaFile), path(sizesFile)
 
     shell:
-        sizesFile = filenameRoot(genomeInfo) + ".sizes"
+        sizesFile = "${genomeInfo.base}.sizes"
 
         """
             set -euo pipefail
@@ -97,13 +120,13 @@ process canonicalChromosomes
     publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy', pattern: '*.canonical'
 
     input:
-        tuple val(id), val(genomeInfo), path(fastaFile), path(sizesFile)
+        tuple val(genomeInfo), path(fastaFile), path(sizesFile)
 
     output:
-        tuple val(id), val(genomeInfo), path(fastaFile), path(canonicalFile)
+        tuple val(genomeInfo), path(fastaFile), path(canonicalFile)
 
     shell:
-        canonicalFile = filenameRoot(genomeInfo) + ".canonical"
+        canonicalFile = "${genomeInfo.base}.canonical"
 
         """
             set -euo pipefail

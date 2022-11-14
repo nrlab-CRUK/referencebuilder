@@ -4,18 +4,12 @@
 
 def speciesPath(genomeInfo)
 {
-    def folder = genomeInfo['name.scientific'].toLowerCase().replace(' ', '_')
-    return "${params.referenceTop}/${folder}"
+    return "${params.referenceTop}/${genomeInfo.species}"
 }
 
 def assemblyPath(genomeInfo)
 {
-    return "${speciesPath(genomeInfo)}/${genomeInfo['version']}"
-}
-
-def filenameRoot(genomeInfo)
-{
-    return "${genomeInfo['abbreviation']}.${genomeInfo['version']}"
+    return "${speciesPath(genomeInfo)}/${genomeInfo.version}"
 }
 
 /*
