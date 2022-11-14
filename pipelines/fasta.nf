@@ -143,12 +143,40 @@ workflow fastaWF
         genomeInfoChannel
 
     main:
-        fetchFasta(genomeInfoChannel) | recreateFasta
+
+        def processingCondition =
+        {
+            genomeInfo ->
+            def requiredFiles = [
+                file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.fa"),
+                file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.fa.fai"),
+                file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.dict"),
+                file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.sizes"),
+                file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.canonical")
+            ]
+            return requiredFiles.any { !it.exists() }
+        }
+
+        processingChoice = genomeInfoChannel.branch
+        {
+            doIt: processingCondition(it)
+            done: true
+        }
+
+        fetchFasta(processingChoice.doIt) | recreateFasta
 
         indexFasta(recreateFasta.out)
 
         sequenceDictionary(recreateFasta.out) | sizesFile | canonicalChromosomes
 
+        presentChannel = processingChoice.done.map
+        {
+            genomeInfo ->
+            tuple genomeInfo, file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.fa")
+        }
+
+        fastaChannel = presentChannel.mix(recreateFasta.out)
+
     emit:
-        fetchFasta.out
+        fastaChannel
 }
