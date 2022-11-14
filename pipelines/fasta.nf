@@ -1,3 +1,14 @@
+/*
+    Pipeline to fetch and process FASTA reference sequence.
+
+    Downloads the FASTA file, processes it, then creates a Samtools index,
+    a Picard sequence dictionary, a sizes file and a canonical chromosomes file.
+
+    Processing the FASTA file involves handling whether it is a TAR or a
+    flat FASTA file, then possibly reordering its chromosomes. See the
+    "recreateFasta" task descriptor for more information.
+*/
+
 include { assemblyPath; javaMemMB } from '../functions/functions'
 include { maxReadsInRam } from '../functions/picard'
 
@@ -19,6 +30,15 @@ process fetchFasta
         """
 }
 
+/*
+    Processes a downloaded FASTA file or TAR of FASTA files and rebuilds them
+    into a single FASTA file, optionally with some of the chromosomes/contigs
+    ordered as given in the assembly's genome info file.
+
+    Any contigs in the reference not present in the chromosome order argument,
+    or if that argument is not given, will be ordered alpha-numerically
+    (i.e. 2 comes before 10).
+ */
 process recreateFasta
 {
     publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'

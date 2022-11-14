@@ -21,26 +21,26 @@ import org.junit.jupiter.api.Test;
 public class RecreateFastaTest
 {
     RecreateFasta recreate = new RecreateFasta();
-    File tempDir;
+    File testDir;
 
     public RecreateFastaTest()
     {
-        tempDir = new File("target/fastatest");
+        testDir = new File("target/fastatest");
     }
 
     @BeforeEach
     public void setup() throws IOException
     {
-        FileUtils.deleteQuietly(tempDir);
-        FileUtils.forceMkdir(tempDir);
+        FileUtils.deleteQuietly(testDir);
+        FileUtils.forceMkdir(testDir);
 
-        recreate.tempDir = tempDir;
+        recreate.tempDir = testDir;
     }
 
     @AfterEach
     public void cleanup()
     {
-        FileUtils.deleteQuietly(tempDir);
+        FileUtils.deleteQuietly(testDir);
     }
 
     @Test
@@ -133,7 +133,7 @@ public class RecreateFastaTest
     {
         recreate.assembly = "hg19fromTAR";
         recreate.inputFile = new File("src/test/data/hg19/fasta.tar.gz");
-        recreate.outputFile = new File(tempDir, recreate.assembly + ".fa");
+        recreate.outputFile = new File(testDir, recreate.assembly + ".fa");
 
         recreate.contigOrder = new LinkedList<>();
         for (int c = 1; c <= 22; c++)
@@ -223,7 +223,7 @@ public class RecreateFastaTest
     {
         recreate.assembly = "GRCh37fromFASTA";
         recreate.inputFile = new File("src/test/data/GRCh37/fasta.txt.gz");
-        recreate.outputFile = new File(tempDir, recreate.assembly + ".fa");
+        recreate.outputFile = new File(testDir, recreate.assembly + ".fa");
 
         // Reverse order, to make sure they're not sorting numerically.
 
