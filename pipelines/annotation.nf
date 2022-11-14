@@ -9,18 +9,17 @@
  process fetchGtf
  {
      memory '4MB'
-     
+
      input:
          val(genomeInfo)
- 
+
      output:
          tuple val(genomeInfo), path(gtfFile)
- 
+
      shell:
          gtfFile = "downloaded.gtf"
- 
+
          """
          curl -s -o !{gtfFile} "!{genomeInfo['url.gtf']}"
          """
  }
- 

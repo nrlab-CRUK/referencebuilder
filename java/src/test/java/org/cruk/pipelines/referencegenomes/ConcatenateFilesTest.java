@@ -19,10 +19,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.compress.compressors.CompressorException;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.FileWriterWithEncoding;
+import org.cruk.common.compression.CompressionOutputStreamBuilder;
 import org.cruk.common.compression.CompressionUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,9 +43,15 @@ public class ConcatenateFilesTest
     StringBuilder sb;
     byte[] zipBytes;
 
+    CompressionOutputStreamBuilder cstreamBuilder;
+
     public ConcatenateFilesTest()
     {
         testDir = new File("target/concattest");
+
+        cstreamBuilder = CompressionOutputStreamBuilder.newInstance()
+                .withCompressionMethod(CompressorStreamFactory.GZIP)
+                .withCompressionLevel(1);
     }
 
     @BeforeEach
@@ -85,7 +94,7 @@ public class ConcatenateFilesTest
     @AfterEach
     public void cleanup() throws IOException
     {
-        //FileUtils.deleteDirectory(testDir);
+        FileUtils.deleteDirectory(testDir);
     }
 
     @Test
@@ -161,7 +170,7 @@ public class ConcatenateFilesTest
         writer.close();
     }
 
-    private void replaceWithZipped(int... indexes) throws IOException
+    private void replaceWithZipped(int... indexes) throws IOException, CompressorException
     {
         for (int index : indexes)
         {
@@ -169,12 +178,12 @@ public class ConcatenateFilesTest
         }
     }
 
-    private File zipFile(File file) throws IOException
+    private File zipFile(File file) throws IOException, CompressorException
     {
         File zipped = new File(file.getParentFile(), file.getName() + ".gz");
 
         InputStream in = new FileInputStream(file);
-        OutputStream out = new GzipCompressorOutputStream(new FileOutputStream(zipped));
+        OutputStream out = cstreamBuilder.addCompressionStream(new FileOutputStream(zipped));
 
         IOUtils.copy(in, out);
 
