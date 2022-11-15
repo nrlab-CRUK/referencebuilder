@@ -80,7 +80,7 @@ process indexFasta
  */
 process sequenceDictionary
 {
-    label "picard"
+    label 'picard'
 
     publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'
 
@@ -102,7 +102,7 @@ process sequenceDictionary
  */
 process sizesFile
 {
-    memory '4MB'
+    label 'tiny'
 
     publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy', pattern: '*.sizes'
 
@@ -135,7 +135,7 @@ process sizesFile
  */
 process canonicalChromosomes
 {
-    memory '4MB'
+    label 'tiny'
 
     publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy', pattern: '*.canonical'
 

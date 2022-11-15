@@ -23,13 +23,13 @@ trap clean_up SIGHUP SIGINT SIGTERM
 java -Djava.io.tmpdir="$TMPDIR" \
 -Xms!{javaMem}m -Xmx!{javaMem}m \
 -jar !{params.PICARD} CreateSequenceDictionary \
-GENOME_ASSEMBLY="!{genomeInfo['abbreviation']}" \
-SPECIES="!{genomeInfo['name.scientific']}" \
-URI="!{genomeInfo['url.fasta']}" \
-TRUNCATE_NAMES_AT_WHITESPACE=false \
-VALIDATION_STRINGENCY=LENIENT \
-TMP_DIR=temp \
-REFERENCE=!{fastaFile} \
-OUTPUT=!{sequenceDictionary}
+--GENOME_ASSEMBLY "!{genomeInfo['version']}" \
+--SPECIES "!{genomeInfo['name.scientific']}" \
+--URI "!{genomeInfo['url.fasta']}" \
+--TRUNCATE_NAMES_AT_WHITESPACE true \
+--VALIDATION_STRINGENCY LENIENT \
+--TMP_DIR temp \
+--REFERENCE !{fastaFile} \
+--OUTPUT !{sequenceDictionary}
 
 clean_up $?

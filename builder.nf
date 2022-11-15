@@ -2,7 +2,9 @@
 
 nextflow.enable.dsl = 2
 
+include { setupWF } from './pipelines/setup'
 include { fastaWF } from './pipelines/fasta'
+include { annotationWF } from './pipelines/annotation'
 
 def readGenomeInfo(propsFile)
 {
@@ -19,9 +21,12 @@ def readGenomeInfo(propsFile)
 
 workflow
 {
+    setupWF()
+
     genomeInfoChannel = channel
         .fromPath("${projectDir}/genomeinfo/full/*.properties")
         .map { readGenomeInfo(it) }
 
     fastaWF(genomeInfoChannel)
+    annotationWF(genomeInfoChannel, setupWF.out)
 }
