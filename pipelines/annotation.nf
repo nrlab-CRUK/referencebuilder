@@ -228,10 +228,8 @@ workflow annotationWF
         def processingCondition =
         {
             genomeInfo ->
-            def requiredFiles = [
-                file("${assemblyPath(genomeInfo)}/annotation/${genomeInfo.base}.gtf"),
-                file("${assemblyPath(genomeInfo)}/annotation/${genomeInfo.base}.txt")
-            ]
+            def annotationBase = "${assemblyPath(genomeInfo)}/annotation/${genomeInfo.base}"
+            def requiredFiles = [ file("${annotationBase}.gtf"), file("${annotationBase}.txt") ]
             return requiredFiles.any { !it.exists() }
         }
 

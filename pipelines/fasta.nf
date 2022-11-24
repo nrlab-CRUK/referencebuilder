@@ -167,12 +167,13 @@ workflow fastaWF
         def processingCondition =
         {
             genomeInfo ->
+            def fastaBase = "${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}"
             def requiredFiles = [
-                file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.fa"),
-                file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.fa.fai"),
-                file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.dict"),
-                file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.sizes"),
-                file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.canonical")
+                file("${fastaBase}.fa"),
+                file("${fastaBase}.fa.fai"),
+                file("${fastaBase}.dict"),
+                file("${fastaBase}.sizes"),
+                file("${fastaBase}.canonical")
             ]
             return requiredFiles.any { !it.exists() }
         }

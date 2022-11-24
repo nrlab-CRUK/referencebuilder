@@ -7,6 +7,7 @@ include { fastaWF } from './pipelines/fasta'
 include { annotationWF } from './pipelines/annotation'
 include { bwaWF } from './pipelines/bwa'
 include { bwamem2WF } from './pipelines/bwamem2'
+include { bowtie1WF } from './pipelines/bowtie1'
 
 def readGenomeInfo(propsFile)
 {
@@ -33,4 +34,5 @@ workflow
     annotationWF(genomeInfoChannel, setupWF.out)
     bwaWF(fastaWF.out)
     bwamem2WF(fastaWF.out)
+    bowtie1WF(fastaWF.out)
 }

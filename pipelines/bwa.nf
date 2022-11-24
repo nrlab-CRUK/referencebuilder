@@ -2,7 +2,7 @@ include { assemblyPath } from '../functions/functions'
 
 process bwaIndex
 {
-    label 'bwa'
+    label 'builder'
 
     publishDir "${assemblyPath(genomeInfo)}", mode: 'copy'
 
@@ -36,12 +36,8 @@ workflow bwaWF
         def processingCondition =
         {
             genomeInfo, fastaFile ->
-            def bwaDir = "${assemblyPath(genomeInfo)}/bwa-${params.BWA_VERSION}"
-            def requiredFiles = [
-                file("${bwaDir}/${genomeInfo.base}.bwt"),
-                file("${bwaDir}/${genomeInfo.base}.pac"),
-                file("${bwaDir}/${genomeInfo.base}.sa")
-            ]
+            def bwaBase = "${assemblyPath(genomeInfo)}/bwa-${params.BWA_VERSION}/${genomeInfo.base}"
+            def requiredFiles = [ file("${bwaBase}.bwt"), file("${bwaBase}.pac"), file("${bwaBase}.sa") ]
             return requiredFiles.any { !it.exists() }
         }
 

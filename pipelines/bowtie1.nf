@@ -1,6 +1,6 @@
 include { assemblyPath } from '../functions/functions'
 
-process bwamem2Index
+process bowtie1Index
 {
     label 'builder'
 
@@ -13,19 +13,19 @@ process bwamem2Index
         tuple val(genomeInfo), path(indexDir)
 
     shell:
-        indexDir = "bwamem2-${params.BWAMEM2_VERSION}"
+        indexDir = "bowtie-${params.BOWTIE1_VERSION}"
 
         """
         mkdir "!{indexDir}"
         cd "!{indexDir}"
 
-        ${params.BWAMEM2} index \
-            -p "!{genomeInfo.base}" \
-            "../!{fastaFile}"
+        !{params.BOWTIE1} \
+            "../!{fastaFile}" \
+            "!{genomeInfo.base}"
         """
 }
 
-workflow bwamem2WF
+workflow bowtie1WF
 {
     take:
         fastqChannel
@@ -35,8 +35,8 @@ workflow bwamem2WF
         def processingCondition =
         {
             genomeInfo, fastaFile ->
-            def bwamemBase = "${assemblyPath(genomeInfo)}/bwamem2-${params.BWAMEM2_VERSION}/${genomeInfo.base}"
-            def requiredFiles = [ file("${bwamemBase}.0123"), file("${bwamemBase}.bwt.2bit.64"), file("${bwamemBase}.pac") ]
+            def bowtieBase = "${assemblyPath(genomeInfo)}/bowtie-${params.BOWTIE1_VERSION}/${genomeInfo.base}"
+            def requiredFiles = [ file("${bowtieBase}.1.ebwt"), file("${bowtieBase}.rev.1.ebwt") ]
             return requiredFiles.any { !it.exists() }
         }
 
@@ -46,16 +46,16 @@ workflow bwamem2WF
             done: true
         }
 
-        bwamem2Index(processingChoice.doIt)
+        bowtie1Index(processingChoice.doIt)
 
         presentChannel = processingChoice.done.map
         {
             genomeInfo, fastaFile ->
-            tuple genomeInfo, file("${assemblyPath(genomeInfo)}/bwamem2-${params.BWAMEM2_VERSION}")
+            tuple genomeInfo, file("${assemblyPath(genomeInfo)}/bowtie-${params.BOWTIE1_VERSION}")
         }
 
-        bwamem2Channel = presentChannel.mix(bwamem2Index.out)
+        bowtie1Channel = presentChannel.mix(bowtie1Index.out)
 
     emit:
-        bwamem2Channel
+        bowtie1Channel
 }

@@ -7,7 +7,7 @@
 process createHgConf
 {
     label 'tiny'
-    tag ''
+    tag 'home'
 
     publishDir "${System.getProperty('user.home')}", mode: 'copy'
 
