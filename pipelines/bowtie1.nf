@@ -28,7 +28,7 @@ process bowtie1Index
 workflow bowtie1WF
 {
     take:
-        fastqChannel
+        fastaChannel
 
     main:
 
@@ -40,7 +40,7 @@ workflow bowtie1WF
             return requiredFiles.any { !it.exists() }
         }
 
-        processingChoice = fastqChannel.branch
+        processingChoice = fastaChannel.branch
         {
             doIt: processingCondition(it)
             done: true

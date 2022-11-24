@@ -28,7 +28,7 @@ process bwamem2Index
 workflow bwamem2WF
 {
     take:
-        fastqChannel
+        fastaChannel
 
     main:
 
@@ -40,7 +40,7 @@ workflow bwamem2WF
             return requiredFiles.any { !it.exists() }
         }
 
-        processingChoice = fastqChannel.branch
+        processingChoice = fastaChannel.branch
         {
             doIt: processingCondition(it)
             done: true

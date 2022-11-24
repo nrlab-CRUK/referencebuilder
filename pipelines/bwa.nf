@@ -29,7 +29,7 @@ process bwaIndex
 workflow bwaWF
 {
     take:
-        fastqChannel
+        fastaChannel
 
     main:
 
@@ -41,7 +41,7 @@ workflow bwaWF
             return requiredFiles.any { !it.exists() }
         }
 
-        processingChoice = fastqChannel.branch
+        processingChoice = fastaChannel.branch
         {
             doIt: processingCondition(it)
             done: true

@@ -21,15 +21,9 @@ RUN cd ${BUILD_DIR}; \
 RUN cd ${INSTALL_DIR}; \
     unzip -q ${BUILD_DIR}/bowtie-${BOWTIE1}-linux-x86_64.zip
 
-# STAR - older versions
+# STAR - new version
 
-ARG STAR=2.7.2b
-RUN cd ${BUILD_DIR}; \
-    wget -O STAR-${STAR}.tar.gz https://github.com/alexdobin/STAR/archive/${STAR}.tar.gz
-RUN cd ${INSTALL_DIR}; \
-    tar ${TAROPTS} -xzf ${BUILD_DIR}/STAR-${STAR}.tar.gz
-
-ARG STAR=2.7.6a
+ARG STAR=2.7.10a
 RUN cd ${BUILD_DIR}; \
     wget -O STAR-${STAR}.tar.gz https://github.com/alexdobin/STAR/archive/${STAR}.tar.gz
 RUN cd ${INSTALL_DIR}; \

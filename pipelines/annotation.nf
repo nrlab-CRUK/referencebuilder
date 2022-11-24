@@ -272,20 +272,20 @@ workflow annotationWF
         gtfFromEnsGene(expandEnsGene.out, hgConfChannel)
         refFlatFromEnsGene(expandEnsGene.out)
 
-        gtfAlreadyHere = sourceChoice.none.map
+        gtfAlreadyHere = processingChoice.done.map
         {
             genomeInfo ->
             tuple genomeInfo, file("${assemblyPath(genomeInfo)}/annotation/${genomeInfo.base}.gtf")
         }
 
-        refFlatAlreadyHere = sourceChoice.none.map
+        refFlatAlreadyHere = processingChoice.done.map
         {
             genomeInfo ->
             tuple genomeInfo, file("${assemblyPath(genomeInfo)}/annotation/${genomeInfo.base}.txt")
         }
 
         gtfChannel = gtfAlreadyHere.mix(expandGtf.out).mix(gtfFromKnownGene.out).mix(gtfFromEnsGene.out)
-        refFlatChannel = gtfAlreadyHere.mix(refFlatFromGTF.out).mix(refFlatFromKnownGene.out).mix(refFlatFromEnsGene.out)
+        refFlatChannel = refFlatAlreadyHere.mix(refFlatFromGTF.out).mix(refFlatFromKnownGene.out).mix(refFlatFromEnsGene.out)
 
     emit:
         gtfChannel = gtfChannel
