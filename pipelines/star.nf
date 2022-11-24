@@ -5,7 +5,7 @@ process starIndex
     time = '12h'
     cpus = 8
 
-    memory = { '45g' * 2 ** (task.attempt - 1) } // So 45, 90, 180
+    memory = { 45.GB * 2 ** (task.attempt - 1) } // So 45, 90, 180
     maxRetries = 2
     // STAR returns error code 104 when there is too little memory.
     errorStrategy = { task.exitStatus in [ 104, 137..140 ] ? 'retry' : 'finish' }
@@ -19,6 +19,8 @@ process starIndex
         tuple val(genomeInfo), path(indexDir)
 
     shell:
+        log.debug "STAR attempt ${task.attempt} on ${genomeInfo.base} uses ${task.memory.bytes} (${task.memory.giga} GB)."
+
         indexDir = "star-${params.STAR_VERSION}"
         indexLength = genomeInfo.getOrDefault('star.SAindexLength', 14)
 
@@ -65,7 +67,7 @@ workflow starWF
 
         presentChannel = processingChoice.done.map
         {
-            genomeInfo, fastaFile ->
+            genomeInfo, fastaFile, gtfFile ->
             tuple genomeInfo, file("${assemblyPath(genomeInfo)}/bwa-${params.BWA_VERSION}")
         }
 

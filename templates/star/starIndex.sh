@@ -1,15 +1,12 @@
 #!/bin/bash
 
-mkdir "!{indexDir}"
-cd "!{indexDir}"
-
 !{params.STAR} \
     --runMode genomeGenerate \
     --runThreadN !{task.cpus} \
-    --limitGenomeGenerateRAM !{task.memory.toKilo()} \
+    --limitGenomeGenerateRAM !{task.memory.bytes} \
     --genomeDir "!{indexDir}" \
-    --genomeFastaFiles "../!{fastaFile}" \
-    --sjdbGTFfile "../!{gtfFile}" \
+    --genomeFastaFiles "!{fastaFile}" \
+    --sjdbGTFfile "!{gtfFile}" \
     --genomeSAindexNbases !{indexLength} \
-    --outTmpDir ../temp \
+    --outTmpDir temp \
     --sjdbOverhang 100

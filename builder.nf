@@ -36,5 +36,5 @@ workflow
     bwaWF(fastaWF.out)
     bwamem2WF(fastaWF.out)
     bowtie1WF(fastaWF.out)
-    // starWF(fastaWF.out, annotationWF.out.gtfChannel)
+    starWF(fastaWF.out, annotationWF.out.gtfChannel)
 }
