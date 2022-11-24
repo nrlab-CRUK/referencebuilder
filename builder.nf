@@ -5,6 +5,7 @@ nextflow.enable.dsl = 2
 include { setupWF } from './pipelines/setup'
 include { fastaWF } from './pipelines/fasta'
 include { annotationWF } from './pipelines/annotation'
+include { bwaWF } from './pipelines/bwa'
 
 def readGenomeInfo(propsFile)
 {
@@ -29,4 +30,5 @@ workflow
 
     fastaWF(genomeInfoChannel)
     annotationWF(genomeInfoChannel, setupWF.out)
+    bwaWF(fastaWF.out)
 }
