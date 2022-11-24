@@ -1,6 +1,6 @@
 include { assemblyPath } from '../functions/functions'
 
-process bwaIndex
+process bwamem2Index
 {
     label 'bwa'
 
@@ -13,20 +13,19 @@ process bwaIndex
         tuple val(genomeInfo), path(indexDir)
 
     shell:
-        indexDir = "bwa-${params.BWA_VERSION}"
+        indexDir = "bwamem2-${params.BWAMEM2_VERSION}"
 
         """
         mkdir "!{indexDir}"
         cd "!{indexDir}"
 
-        !{params.BWA} index \
-            -a bwtsw \
+        ${params.BWAMEM2} index \
             -p "!{genomeInfo.base}" \
             "../!{fastaFile}"
         """
 }
 
-workflow bwaWF
+workflow bwamem2WF
 {
     take:
         fastqChannel
@@ -36,11 +35,11 @@ workflow bwaWF
         def processingCondition =
         {
             genomeInfo, fastaFile ->
-            def bwaDir = "${assemblyPath(genomeInfo)}/bwa-${params.BWA_VERSION}"
+            def bwamemDir = "${assemblyPath(genomeInfo)}/bwamem2-${params.BWAMEM2_VERSION}"
             def requiredFiles = [
-                file("${bwaDir}/${genomeInfo.base}.bwt"),
-                file("${bwaDir}/${genomeInfo.base}.pac"),
-                file("${bwaDir}/${genomeInfo.base}.sa")
+                file("${bwamemDir}/${genomeInfo.base}.0123"),
+                file("${bwamemDir}/${genomeInfo.base}.bwt.2bit.64"),
+                file("${bwamemDir}/${genomeInfo.base}.pac")
             ]
             return requiredFiles.any { !it.exists() }
         }
@@ -51,16 +50,16 @@ workflow bwaWF
             done: true
         }
 
-        bwaIndex(processingChoice.doIt)
+        bwamem2Index(processingChoice.doIt)
 
         presentChannel = processingChoice.done.map
         {
             genomeInfo, fastaFile ->
-            tuple genomeInfo, file("${assemblyPath(genomeInfo)}/bwa-${params.BWA_VERSION}")
+            tuple genomeInfo, file("${assemblyPath(genomeInfo)}/bwamem2-${params.BWAMEM2_VERSION}")
         }
 
-        bwaChannel = presentChannel.mix(bwaIndex.out)
+        bwamem2Channel = presentChannel.mix(bwamem2Index.out)
 
     emit:
-        bwaChannel
+        bwamem2Channel
 }
