@@ -43,7 +43,7 @@ process expandGtf
     shell:
         javaMem = javaMemMB(task)
         outputFile = "${genomeInfo.base}.gtf"
-        template "annotation/ConcatenateFiles.sh"
+        template "ConcatenateFiles.sh"
 }
 
 process refFlatFromGTF
@@ -172,7 +172,7 @@ process expandEnsGene
     shell:
         javaMem = javaMemMB(task)
         outputFile = "ensgene.txt"
-        template "annotation/ConcatenateFiles.sh"
+        template "ConcatenateFiles.sh"
 }
 
 process gtfFromEnsGene
