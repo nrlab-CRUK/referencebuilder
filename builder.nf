@@ -14,6 +14,7 @@ include { bwamem2WF } from './pipelines/bwamem2'
 include { bowtie1WF } from './pipelines/bowtie1'
 include { starWF } from './pipelines/star'
 include { salmonWF } from './pipelines/salmon'
+include { effectiveGenomeSizesWF } from './pipelines/effectiveSizes'
 
 def readGenomeInfo(propsFile)
 {
@@ -36,14 +37,15 @@ workflow
     setupWF()
 
     genomeInfoChannel = channel
-        .fromPath("${projectDir}/genomeinfo/full/*.properties")
+        .fromPath("${projectDir}/genomeinfo/*.properties")
         .map { readGenomeInfo(it) }
 
     fastaWF(genomeInfoChannel)
     annotationWF(genomeInfoChannel, setupWF.out)
-    bwaWF(fastaWF.out)
-    bwamem2WF(fastaWF.out)
-    bowtie1WF(fastaWF.out)
-    starWF(fastaWF.out, annotationWF.out.gtfChannel)
-    salmonWF(fastaWF.out)
+    bwaWF(fastaWF.out.fastaChannel)
+    bwamem2WF(fastaWF.out.fastaChannel)
+    //bowtie1WF(fastaWF.out.fastaChannel)
+    starWF(fastaWF.out.fastaChannel, annotationWF.out.gtfChannel)
+    salmonWF(fastaWF.out.fastaChannel)
+    effectiveGenomeSizesWF(fastaWF.out.canonicalChannel)
 }

@@ -130,11 +130,12 @@ process salmonIndex
 process transcriptToGene
 {
     label 'tiny'
+    executor 'local'
 
     publishDir "${assemblyPath(genomeInfo)}/salmon-${params.SALMON_VERSION}", mode: 'copy'
 
     input:
-        tuple val(genomeInfo), path(transcriptsFile)
+        tuple val(genomeInfo), path(transcriptsFile), path(indexFile)
 
     output:
         tuple val(genomeInfo), path(mappingFile)
@@ -144,7 +145,7 @@ process transcriptToGene
 
         """
         echo -e "TxID\tGeneID" > !{mappingFile}
-        cat !{transcripts} | \
+        cat !{transcriptsFile} | \
             egrep '^>' | \
             cut -d '|' -f1,2 | \
             sed -e 's/>//' | \
@@ -162,21 +163,22 @@ workflow salmonWF
         def kmers = [ 17, 23, 31 ]
         kmerChannel = channel.fromList(kmers)
 
-        def processingCondition =
+        def processingCondition1 =
         {
             genomeInfo, fastaFile ->
             def salmonDir = "${assemblyPath(genomeInfo)}/salmon-${params.SALMON_VERSION}"
             def requiredFiles = kmers.collect { k -> file("${salmonDir}/k${k}/pos.bin") }
+            requiredFiles << file("${salmonDir}/tx2gene.tsv")
             return requiredFiles.any { !it.exists() }
         }
 
-        processingChoice = fastaChannel.branch
+        processingChoice1 = fastaChannel.branch
         {
-            doIt: processingCondition(it)
+            doIt: processingCondition1(it)
             done: true
         }
 
-        fetchTranscripts(processingChoice.doIt) | installTranscripts | indexTranscripts
+        fetchTranscripts(processingChoice1.doIt) | installTranscripts | indexTranscripts
 
         createDecoys(installTranscripts.out)
 
@@ -195,5 +197,20 @@ workflow salmonWF
 
         indexingChannel = transcriptAndDecoysChannel.combine(kmerChannel)
 
+        def processingCondition2 =
+        {
+            genomeInfo, fastaFile, decoysFile, kmer ->
+            def salmonDir = "${assemblyPath(genomeInfo)}/salmon-${params.SALMON_VERSION}"
+            return !file("${salmonDir}/k${kmer}/pos.bin").exists()
+        }
+
+        processingChoice2 = indexingChannel.branch
+        {
+            doIt: processingCondition2(it)
+            done: true
+        }
+
         salmonIndex(indexingChannel)
+
+        transcriptToGene(installTranscripts.out)
 }

@@ -82,7 +82,7 @@ process sequenceDictionary
 {
     label 'picard'
 
-    publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'
+    publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy', pattern: '*.dict'
 
     input:
         tuple val(genomeInfo), path(fastaFile)
@@ -190,14 +190,24 @@ workflow fastaWF
 
         sequenceDictionary(recreateFasta.out) | sizesFile | canonicalChromosomes
 
-        presentChannel = processingChoice.done.map
+        fastaPresentChannel = processingChoice.done.map
         {
             genomeInfo ->
             tuple genomeInfo, file("${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}.fa")
         }
 
-        fastaChannel = presentChannel.mix(recreateFasta.out)
+        fastaChannel = fastaPresentChannel.mix(recreateFasta.out)
+
+        canonicalPresentChannel = processingChoice.done.map
+        {
+            genomeInfo ->
+            def fastaBase = "${assemblyPath(genomeInfo)}/fasta/${genomeInfo.base}"
+            tuple genomeInfo, file("${fastaBase}.fa"), file("${fastaBase}.canonical")
+        }
+
+        canonicalChannel = canonicalPresentChannel.mix(canonicalChromosomes.out)
 
     emit:
         fastaChannel
+        canonicalChannel
 }
