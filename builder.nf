@@ -38,7 +38,7 @@ workflow
     setupWF()
 
     genomeInfoChannel = channel
-        .fromPath("${projectDir}/genomeinfo/*.properties")
+        .fromPath("${params.genomeInfoDirectory}/*.properties")
         .map { readGenomeInfo(it) }
 
     fastaWF(genomeInfoChannel)
