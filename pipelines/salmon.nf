@@ -100,7 +100,8 @@ process combineGenomeAndTranscripts
 process salmonIndex
 {
     label 'builder'
-    cpus 6
+    maxRetries 3
+    cpus 8
 
     tag = { "${genomeInfo.base} k${kmer}" }
 
