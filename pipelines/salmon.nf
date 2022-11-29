@@ -163,22 +163,17 @@ workflow salmonWF
         def kmers = [ 17, 23, 31 ]
         kmerChannel = channel.fromList(kmers)
 
-        def processingCondition1 =
-        {
-            genomeInfo, fastaFile ->
-            def salmonDir = "${assemblyPath(genomeInfo)}/salmon-${params.SALMON_VERSION}"
-            def requiredFiles = kmers.collect { k -> file("${salmonDir}/k${k}/pos.bin") }
-            requiredFiles << file("${salmonDir}/tx2gene.tsv")
-            return requiredFiles.any { !it.exists() }
-        }
+        processingChannel = fastaChannel
+            .filter
+            {
+                genomeInfo, fastaFile ->
+                def salmonDir = "${assemblyPath(genomeInfo)}/salmon-${params.SALMON_VERSION}"
+                def requiredFiles = kmers.collect { k -> file("${salmonDir}/k${k}/pos.bin") }
+                requiredFiles << file("${salmonDir}/tx2gene.tsv")
+                return requiredFiles.any { !it.exists() }
+            }
 
-        processingChoice1 = fastaChannel.branch
-        {
-            doIt: processingCondition1(it)
-            done: true
-        }
-
-        fetchTranscripts(processingChoice1.doIt) | installTranscripts | indexTranscripts
+        fetchTranscripts(processingChannel) | installTranscripts | indexTranscripts
 
         createDecoys(installTranscripts.out)
 
@@ -195,22 +190,24 @@ workflow salmonWF
 
         transcriptAndDecoysChannel = fastaById.combine(decoysById, by: 0).map { id, genomeInfo, fastaFile, decoysFile -> tuple genomeInfo, fastaFile, decoysFile }
 
-        indexingChannel = transcriptAndDecoysChannel.combine(kmerChannel)
-
-        def processingCondition2 =
-        {
-            genomeInfo, fastaFile, decoysFile, kmer ->
-            def salmonDir = "${assemblyPath(genomeInfo)}/salmon-${params.SALMON_VERSION}"
-            return !file("${salmonDir}/k${kmer}/pos.bin").exists()
-        }
-
-        processingChoice2 = indexingChannel.branch
-        {
-            doIt: processingCondition2(it)
-            done: true
-        }
+        indexingChannel = transcriptAndDecoysChannel
+            .combine(kmerChannel)
+            .filter
+            {
+                genomeInfo, fastaFile, decoysFile, kmer ->
+                def salmonDir = "${assemblyPath(genomeInfo)}/salmon-${params.SALMON_VERSION}"
+                return !file("${salmonDir}/k${kmer}/pos.bin").exists()
+            }
 
         salmonIndex(indexingChannel)
 
-        transcriptToGene(installTranscripts.out)
+        transcriptToGeneChannel = installTranscripts.out
+            .filter
+            {
+                genomeInfo, transcriptsFile, indexFile ->
+                def salmonDir = "${assemblyPath(genomeInfo)}/salmon-${params.SALMON_VERSION}"
+                return !file("${salmonDir}/tx2gene.tsv").exists()
+            }
+
+        transcriptToGene(transcriptToGeneChannel)
 }

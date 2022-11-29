@@ -14,7 +14,7 @@ include { assemblyPath; javaMemMB } from '../functions/functions'
 
 process fetchGtf
 {
-    memory '4MB'
+    label 'fetcher'
 
     input:
         val(genomeInfo)
@@ -67,7 +67,7 @@ process refFlatFromGTF
 
 process fetchKnownGene
 {
-    memory '4MB'
+    label 'fetcher'
 
     input:
         val(genomeInfo)
@@ -94,7 +94,7 @@ process expandKnownGene
     shell:
         javaMem = javaMemMB(task)
         outputFile = "knowngene.txt"
-        template "annotation/ConcatenateFiles.sh"
+        template "ConcatenateFiles.sh"
 }
 
 process gtfFromKnownGene
@@ -132,10 +132,10 @@ process refFlatFromKnownGene
         refFlatFile = "${genomeInfo.base}.txt"
 
         """
-            python \
-                "!{projectDir}/python/knownGeneToRefFlat.py" \
-                < ${knownGeneFile} \
-                > ${refFlatFile}
+        python \
+            "!{projectDir}/python/knownGeneToRefFlat.py" \
+            < !{knownGeneFile} \
+            > !{refFlatFile}
         """
 }
 
@@ -145,7 +145,7 @@ process refFlatFromKnownGene
 
 process fetchEnsGene
 {
-    memory '4MB'
+    label 'fetcher'
 
     input:
         val(genomeInfo)
@@ -210,10 +210,10 @@ process refFlatFromEnsGene
         refFlatFile = "${genomeInfo.base}.txt"
 
         """
-            python \
-                "!{projectDir}/python/ensGeneToRefFlat.py" \
-                < ${ensGeneFile} \
-                > ${refFlatFile}
+        python \
+            "!{projectDir}/python/ensGeneToRefFlat.py" \
+            < !{ensGeneFile} \
+            > !{refFlatFile}
         """
 }
 

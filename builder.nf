@@ -9,6 +9,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty
 include { setupWF } from './pipelines/setup'
 include { fastaWF } from './pipelines/fasta'
 include { annotationWF } from './pipelines/annotation'
+include { geneNamesWF } from './pipelines/geneNames'
 include { bwaWF } from './pipelines/bwa'
 include { bwamem2WF } from './pipelines/bwamem2'
 include { bowtie1WF } from './pipelines/bowtie1'
@@ -42,6 +43,7 @@ workflow
 
     fastaWF(genomeInfoChannel)
     annotationWF(genomeInfoChannel, setupWF.out)
+    geneNamesWF(genomeInfoChannel)
     bwaWF(fastaWF.out.fastaChannel)
     bwamem2WF(fastaWF.out.fastaChannel)
     //bowtie1WF(fastaWF.out.fastaChannel)

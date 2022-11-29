@@ -32,31 +32,14 @@ workflow bwaWF
         fastaChannel
 
     main:
+        processingChannel = fastaChannel
+            .filter
+            {
+                genomeInfo, fastaFile ->
+                def bwaBase = "${assemblyPath(genomeInfo)}/bwa-${params.BWA_VERSION}/${genomeInfo.base}"
+                def requiredFiles = [ file("${bwaBase}.bwt"), file("${bwaBase}.pac"), file("${bwaBase}.sa") ]
+                return requiredFiles.any { !it.exists() }
+            }
 
-        def processingCondition =
-        {
-            genomeInfo, fastaFile ->
-            def bwaBase = "${assemblyPath(genomeInfo)}/bwa-${params.BWA_VERSION}/${genomeInfo.base}"
-            def requiredFiles = [ file("${bwaBase}.bwt"), file("${bwaBase}.pac"), file("${bwaBase}.sa") ]
-            return requiredFiles.any { !it.exists() }
-        }
-
-        processingChoice = fastaChannel.branch
-        {
-            doIt: processingCondition(it)
-            done: true
-        }
-
-        bwaIndex(processingChoice.doIt)
-
-        presentChannel = processingChoice.done.map
-        {
-            genomeInfo, fastaFile ->
-            tuple genomeInfo, file("${assemblyPath(genomeInfo)}/bwa-${params.BWA_VERSION}")
-        }
-
-        bwaChannel = presentChannel.mix(bwaIndex.out)
-
-    emit:
-        bwaChannel
+        bwaIndex(processingChannel)
 }

@@ -14,7 +14,7 @@ include { maxReadsInRam } from '../functions/picard'
 
 process fetchFasta
 {
-    memory '4MB'
+    label 'fetcher'
 
     input:
         val(genomeInfo)

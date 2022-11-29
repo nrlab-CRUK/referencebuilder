@@ -31,31 +31,14 @@ workflow bwamem2WF
         fastaChannel
 
     main:
+        processingChannel = fastaChannel
+            .filter
+            {
+                genomeInfo, fastaFile ->
+                def bwamemBase = "${assemblyPath(genomeInfo)}/bwamem2-${params.BWAMEM2_VERSION}/${genomeInfo.base}"
+                def requiredFiles = [ file("${bwamemBase}.0123"), file("${bwamemBase}.bwt.2bit.64"), file("${bwamemBase}.pac") ]
+                return requiredFiles.any { !it.exists() }
+            }
 
-        def processingCondition =
-        {
-            genomeInfo, fastaFile ->
-            def bwamemBase = "${assemblyPath(genomeInfo)}/bwamem2-${params.BWAMEM2_VERSION}/${genomeInfo.base}"
-            def requiredFiles = [ file("${bwamemBase}.0123"), file("${bwamemBase}.bwt.2bit.64"), file("${bwamemBase}.pac") ]
-            return requiredFiles.any { !it.exists() }
-        }
-
-        processingChoice = fastaChannel.branch
-        {
-            doIt: processingCondition(it)
-            done: true
-        }
-
-        bwamem2Index(processingChoice.doIt)
-
-        presentChannel = processingChoice.done.map
-        {
-            genomeInfo, fastaFile ->
-            tuple genomeInfo, file("${assemblyPath(genomeInfo)}/bwamem2-${params.BWAMEM2_VERSION}")
-        }
-
-        bwamem2Channel = presentChannel.mix(bwamem2Index.out)
-
-    emit:
-        bwamem2Channel
+        bwamem2Index(processingChannel)
 }

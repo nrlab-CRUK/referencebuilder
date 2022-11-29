@@ -37,9 +37,9 @@ process createCanonicalFasta
 process jellyfishCount
 {
     cpus = 4
-    time = '2h'
-    memory = { 64.GB * 2 ** (task.attempt - 1) } // So 64, 128, 256
-    maxRetries = 2
+    time = { 6.h * task.attempt }
+    memory = { 64.GB * task.attempt }
+    maxRetries = 3
 
     input:
         tuple val(genomeInfo), path(canonicalFasta), val(genomeLength), val(readLength)

@@ -57,22 +57,14 @@ workflow starWF
             return requiredFiles.any { !it.exists() }
         }
 
-        processingChoice = starInputChannel.branch
-        {
-            doIt: processingCondition(it)
-            done: true
-        }
+        processingChannel = starInputChannel
+            .filter
+            {
+                genomeInfo, fastaFile, gtfFile ->
+                def starDir = "${assemblyPath(genomeInfo)}/star-${params.STAR_VERSION}"
+                def requiredFiles = [ file("${starDir}/SA"), file("${starDir}/SAindex"), file("${starDir}/Genome") ]
+                return requiredFiles.any { !it.exists() }
+            }
 
-        starIndex(processingChoice.doIt)
-
-        presentChannel = processingChoice.done.map
-        {
-            genomeInfo, fastaFile, gtfFile ->
-            tuple genomeInfo, file("${assemblyPath(genomeInfo)}/bwa-${params.BWA_VERSION}")
-        }
-
-        starChannel = presentChannel.mix(starIndex.out)
-
-    emit:
-        starChannel
+        starIndex(processingChannel)
 }
