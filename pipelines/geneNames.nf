@@ -29,7 +29,7 @@ process downloadBioMart
 
         """
         wget -O !{geneNamesFile} \
-        http://www.ensembl.org/biomart/martservice?query="<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE Query><Query virtualSchemaName=\"default\" formatter=\"TSV\" header=\"0\" uniqueRows=\"1\" count=\"\" datasetConfigVersion=\"0.6\"><Dataset name=\"!{martName}\" interface=\"default\"><Attribute name=\"ensembl_gene_id\"/><Attribute name=\"external_gene_name\"/><Attribute name=\"description\"/></Dataset></Query>"
+        http://www.ensembl.org/biomart/martservice?query="<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><!DOCTYPE Query><Query virtualSchemaName=\\"default\\" formatter=\\"TSV\\" header=\\"0\\" uniqueRows=\\"1\\" count=\\"\\" datasetConfigVersion=\\"0.6\\"><Dataset name=\\"!{martName}\\" interface=\\"default\\"><Attribute name=\\"ensembl_gene_id\\"/><Attribute name=\\"external_gene_name\\"/><Attribute name=\\"description\\"/></Dataset></Query>"
         """
 }
 
