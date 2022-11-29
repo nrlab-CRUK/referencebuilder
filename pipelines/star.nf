@@ -17,12 +17,10 @@ process starIndexWithGTF
         tuple val(genomeInfo), path(indexDir)
 
     shell:
-        log.debug "STAR attempt ${task.attempt} on ${genomeInfo.base} uses ${task.memory.bytes} (${task.memory.giga} GB)."
-
         indexDir = "star-${params.STAR_VERSION}"
         indexLength = genomeInfo.getOrDefault('star.SAindexLength', 14)
 
-        template 'star/starIndex.sh'
+        template 'star/starIndexWithGTF.sh'
 }
 
 process starIndexNoGTF
@@ -30,7 +28,7 @@ process starIndexNoGTF
     time = '12h'
     cpus = 8
 
-    memory = { 45.GB * 2 ** (task.attempt - 1) } // So 45, 90, 180
+    memory = { 45.GB * 2 ** (task.attempt - 1) }
     maxRetries = 2
 
     publishDir "${assemblyPath(genomeInfo)}", mode: 'copy'
@@ -42,8 +40,6 @@ process starIndexNoGTF
         tuple val(genomeInfo), path(indexDir)
 
     shell:
-        log.debug "STAR attempt ${task.attempt} on ${genomeInfo.base} uses ${task.memory.bytes} (${task.memory.giga} GB)."
-
         indexDir = "star-${params.STAR_VERSION}"
         indexLength = genomeInfo.getOrDefault('star.SAindexLength', 14)
 
