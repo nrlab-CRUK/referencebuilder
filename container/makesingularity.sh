@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TAG="latest"
+TAG="2.0.0"
 REPO="crukcibioinformatics/referencebuilder:$TAG"
 
 sudo rm -f referencebuilder*.sif

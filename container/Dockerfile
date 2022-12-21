@@ -1,13 +1,13 @@
-FROM    crukcibioinformatics/alignment:4.0.5
+FROM    crukcibioinformatics/alignment:4.1.0
 
 LABEL   maintainer="Richard Bowers<richard.bowers@cruk.cam.ac.uk>"
 
 ARG INSTALL_DIR=/opt
 ARG BUILD_DIR=/var/tmp/alignment_software_build
 
-ARG BOWTIE1=1.1.1
+ARG BOWTIE1=1.3.1
 ARG JELLYFISH=2.3.0
-ARG SALMON=1.8.0
+ARG SALMON=1.9.0
 
 ARG TAROPTS="--no-same-owner --no-same-permissions"
 
@@ -20,14 +20,6 @@ RUN cd ${BUILD_DIR}; \
     wget https://downloads.sourceforge.net/project/bowtie-bio/bowtie/${BOWTIE1}/bowtie-${BOWTIE1}-linux-x86_64.zip
 RUN cd ${INSTALL_DIR}; \
     unzip -q ${BUILD_DIR}/bowtie-${BOWTIE1}-linux-x86_64.zip
-
-# STAR - new version
-
-ARG STAR=2.7.10a
-RUN cd ${BUILD_DIR}; \
-    wget -O STAR-${STAR}.tar.gz https://github.com/alexdobin/STAR/archive/${STAR}.tar.gz
-RUN cd ${INSTALL_DIR}; \
-    tar ${TAROPTS} -xzf ${BUILD_DIR}/STAR-${STAR}.tar.gz
 
 # Salmon
 RUN cd ${BUILD_DIR}; \
