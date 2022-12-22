@@ -392,6 +392,11 @@ public class RecreateFasta implements Callable<Integer>
         {
             returnCode = new CommandLine(new RecreateFasta()).execute(args);
         }
+        catch (OutOfMemoryError e)
+        {
+            returnCode = 104;
+            e.printStackTrace();
+        }
         catch (Throwable e)
         {
             e.printStackTrace();

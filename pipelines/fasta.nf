@@ -41,6 +41,8 @@ process fetchFasta
  */
 process recreateFasta
 {
+    label 'assembler'
+
     publishDir "${assemblyPath(genomeInfo)}/fasta", mode: 'copy'
 
     input:

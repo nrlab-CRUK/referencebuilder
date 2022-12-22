@@ -166,6 +166,11 @@ public class ConcatenateFiles implements Callable<Integer>
         {
             returnCode = new CommandLine(new ConcatenateFiles()).execute(args);
         }
+        catch (OutOfMemoryError e)
+        {
+            returnCode = 104;
+            e.printStackTrace();
+        }
         catch (Throwable e)
         {
             e.printStackTrace();
