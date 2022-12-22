@@ -2,8 +2,15 @@ include { assemblyPath; javaMemMB } from '../functions/functions'
 
 def calculateEffectiveGenomeSize(genomeInfo, jellyfishStatsFile, readLength, genomeLength)
 {
-    def uniqueMerCount = jellyfishStatsFile.readLines().first().split(/\s+/)[1] as long
-    def effectiveRatio = uniqueMerCount.doubleValue() / genomeLength.doubleValue()
+    def uniqueMerCount = 0L
+    def effectiveRatio = 0.0
+
+    def lines = jellyfishStatsFile.readLines()
+    if (!lines.empty)
+    {
+        uniqueMerCount = lines.first().split(/\s+/)[1] as long
+        effectiveRatio = uniqueMerCount.doubleValue() / genomeLength.doubleValue()
+    }
     return [
         readLength: readLength,
         genomeLength: genomeLength,
