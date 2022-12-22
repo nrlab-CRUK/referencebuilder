@@ -26,7 +26,7 @@ process fetchGtf
         gtfFile = "downloaded.gtf"
 
         """
-        curl -s -o !{gtfFile} "!{genomeInfo['url.gtf']}"
+        wget -O !{gtfFile} "!{genomeInfo['url.gtf']}"
         """
 }
 
@@ -79,7 +79,7 @@ process fetchKnownGene
         knownGeneFile = "downloaded.knowngene.txt"
 
         """
-        curl -s -o !{knownGeneFile} "!{genomeInfo['url.knowngene']}"
+        wget -O !{knownGeneFile} "!{genomeInfo['url.knowngene']}"
         """
 }
 
@@ -157,7 +157,7 @@ process fetchEnsGene
         ensGeneFile = "downloaded.ensgene.txt"
 
         """
-        curl -s -o !{ensGeneFile} "!{genomeInfo['url.ensgene']}"
+        wget -O !{ensGeneFile} "!{genomeInfo['url.ensgene']}"
         """
 }
 

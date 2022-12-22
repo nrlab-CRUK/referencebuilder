@@ -51,7 +51,7 @@ process fetchXRef
         xrefFile = "xref.txt.gz"
 
         """
-        curl -s -o !{xrefFile} "!{genomeInfo['url.xref']}"
+        wget -O !{xrefFile} "!{genomeInfo['url.xref']}"
         """
 }
 

@@ -23,7 +23,7 @@ process fetchTranscripts
         outputFile = "transcripts"
 
         """
-        curl -s -o !{outputFile} "!{genomeInfo['url.transcripts.fasta']}"
+        wget -O !{outputFile} "!{genomeInfo['url.transcripts.fasta']}"
         """
 }
 

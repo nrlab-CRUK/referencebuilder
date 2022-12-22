@@ -26,7 +26,7 @@ process fetchFasta
         fastaFile = "downloaded.fa.gz"
 
         """
-        curl -s -o !{fastaFile} "!{genomeInfo['url.fasta']}"
+        wget -O !{fastaFile} "!{genomeInfo['url.fasta']}"
         """
 }
 
