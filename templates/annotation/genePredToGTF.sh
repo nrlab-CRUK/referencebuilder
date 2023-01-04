@@ -4,6 +4,6 @@
 
 set -euo pipefail
 
-!{params.GENEPREDTOGTF} \
+genePredToGtf \
     !{database} !{table} \
     !{gtfFile}

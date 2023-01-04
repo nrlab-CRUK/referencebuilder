@@ -72,7 +72,7 @@ process indexFasta
         indexFile = fastaFile.name + ".fai"
 
         """
-        !{params.SAMTOOLS} faidx !{fastaFile}
+        samtools faidx !{fastaFile}
         """
 }
 

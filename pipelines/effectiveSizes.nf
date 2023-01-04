@@ -32,12 +32,12 @@ process createCanonicalFasta
         canonicalIndex = "${canonicalFasta}.fai"
 
         """
-        !{params.SAMTOOLS} faidx \
+        samtools faidx \
             "!{fastaFile}" \
             !{canonicalContigs.join(' ')} \
             > !{canonicalFasta}
 
-        !{params.SAMTOOLS} faidx !{canonicalFasta}
+        samtools faidx !{canonicalFasta}
         """
 }
 
@@ -58,8 +58,7 @@ process jellyfishCount
         dataFile = 'jellyfish.data'
 
         """
-        !{params.JELLYFISH} \
-            count \
+        jellyfish count \
             -t !{task.cpus} \
             -m !{readLength} \
             -s !{genomeLength} \
@@ -83,8 +82,7 @@ process jellyfishStats
         statsFile = 'jellyfish.stats'
 
         """
-        !{params.JELLYFISH} \
-            stats \
+        jellyfish stats \
             -o !{statsFile} \
             !{dataFile}
         """

@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-!{params.GTFTOGENEPRED} \
+gtfToGenePred \
     -infoOut=info.txt \
     !{gtfFile} \
     refflat.txt

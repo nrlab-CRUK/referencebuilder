@@ -57,7 +57,7 @@ process indexTranscripts
         indexFile = transcriptsFile.name + ".fai"
 
         """
-        !{params.SAMTOOLS} faidx !{transcriptsFile}
+        samtools faidx !{transcriptsFile}
         """
 }
 
@@ -117,7 +117,7 @@ process salmonIndex
         indexDir = "k${kmer}"
 
         """
-        !{params.SALMON} index \
+        salmon index \
             --transcripts "!{fastaFile}" \
             --decoys "!{decoysFile}" \
             --kmerLen !{kmer} \

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-!{params.STAR} \
+STAR \
     --runMode genomeGenerate \
     --runThreadN !{task.cpus} \
     --limitGenomeGenerateRAM !{task.memory.bytes} \

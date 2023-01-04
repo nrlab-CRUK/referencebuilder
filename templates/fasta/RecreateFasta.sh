@@ -22,7 +22,7 @@ trap clean_up SIGHUP SIGINT SIGTERM
 
 java -Djava.io.tmpdir="$TMPDIR" \
 -Xms!{javaMem}m -Xmx!{javaMem}m \
--cp /opt/nf-referencebuilder.jar \
+-cp !{params.REFBUILDER} \
 org.cruk.pipelines.referencegenomes.RecreateFasta \
 -i !{fastaFile} \
 -o !{correctedFile} \

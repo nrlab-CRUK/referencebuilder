@@ -19,7 +19,7 @@ process bwamem2Index
         mkdir "!{indexDir}"
         cd "!{indexDir}"
 
-        ${params.BWAMEM2} index \
+        bwa-mem2 index \
             -p "!{genomeInfo.base}" \
             "../!{fastaFile}"
         """

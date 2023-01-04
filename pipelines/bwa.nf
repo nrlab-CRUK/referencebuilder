@@ -19,7 +19,7 @@ process bwaIndex
         mkdir "!{indexDir}"
         cd "!{indexDir}"
 
-        !{params.BWA} index \
+        bwa index \
             -a bwtsw \
             -p "!{genomeInfo.base}" \
             "../!{fastaFile}"
