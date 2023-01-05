@@ -1,4 +1,3 @@
-# CRUK-CI Bioinformatics Reference Builder Pipeline - Nextflow Version
+# NR Lab Reference Builder Pipeline
 
-A pipeline to build our reference data structure.
-
+A pipeline to build the reference data structure.

@@ -25,14 +25,9 @@ def readGenomeInfo(propsFile)
     return genomeInfo
 }
 
-def speciesPath(genomeInfo)
-{
-    return "${params.referenceTop}/${genomeInfo.species}"
-}
-
 def assemblyPath(genomeInfo)
 {
-    return "${speciesPath(genomeInfo)}/${genomeInfo.version}"
+    return "${params.referenceTop}/${genomeInfo.version}"
 }
 
 /*

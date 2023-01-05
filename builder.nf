@@ -9,11 +9,7 @@ include { genomeInfoWF } from './pipelines/info'
 include { fastaWF } from './pipelines/fasta'
 include { annotationWF } from './pipelines/annotation'
 include { geneNamesWF } from './pipelines/geneNames'
-include { bwaWF } from './pipelines/bwa'
 include { bwamem2WF } from './pipelines/bwamem2'
-include { starWF } from './pipelines/star'
-include { salmonWF } from './pipelines/salmon'
-include { effectiveGenomeSizesWF } from './pipelines/effectiveSizes'
 
 workflow
 {
@@ -30,9 +26,5 @@ workflow
     fastaWF(genomeInfoChannel)
     annotationWF(genomeInfoChannel, setupWF.out)
     geneNamesWF(genomeInfoChannel)
-    bwaWF(fastaWF.out.fastaChannel)
     bwamem2WF(fastaWF.out.fastaChannel)
-    starWF(fastaWF.out.fastaChannel, annotationWF.out.gtfChannel)
-    salmonWF(fastaWF.out.fastaChannel)
-    effectiveGenomeSizesWF(fastaWF.out.canonicalChannel)
 }
