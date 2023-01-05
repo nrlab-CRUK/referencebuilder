@@ -2,127 +2,76 @@
  * Pipeline to fetch and process COSMIC files.
  */
 
-include { assemblyPath; javaMemMB } from '../functions/functions'
+include { assemblyPath } from '../functions/functions'
 
-// Coding mutants
+// Map from the URL key part in properties to the part of the filename.
+def filenamePart(type)
+{
+    switch (type)
+    {
+        case 'cosmicmutants':   return 'codingmutants'
+        case 'cosmicnoncoding': return 'noncodingvariants'
+        default: throw new IllegalArgumentException("${type} is not an expected cosmic type.")
+    }
+}
 
-process fetchMutants
+process fetch
 {
     label 'fetcher'
 
     when:
-        genomeInfo.containsKey('url.cosmicmutants')
+        genomeInfo.containsKey("url.${type}" as String)
 
     input:
-        val(genomeInfo)
+        tuple val(genomeInfo), val(type)
 
     output:
-        tuple val(genomeInfo), path(mutantsFile)
+        tuple val(genomeInfo), val(type), path(cosmicFile)
 
     shell:
-        mutantsFile = "downloaded.gz"
+        cosmicFile = "downloaded.gz"
+        url = genomeInfo["url.${type}" as String]
 
         """
         python3 "${projectDir}/python/fetchCosmic.py" \
-            "!{genomeInfo['url.cosmicmutants']}" \
-            "!{mutantsFile}"
+            "!{url}" \
+            "!{cosmicFile}"
         """
 }
 
-process recompressMutants
+process recompress
 {
     cpus 2
 
     publishDir "${assemblyPath(genomeInfo)}/cosmic", mode: 'copy'
 
     input:
-        tuple val(genomeInfo), path(mutantsFile)
+        tuple val(genomeInfo), val(type), path(cosmicFile)
 
     output:
-        tuple val(genomeInfo), path(zippedFile)
+        tuple val(genomeInfo), val(type), path(zippedFile)
 
     shell:
-        zippedFile = "${genomeInfo.base}.codingmutants.vcf.gz"
+        zippedFile = "${genomeInfo.base}.${filenamePart(type)}.vcf.gz"
 
         """
-        zcat "!{mutantsFile}" | bgzip -c -l 9 > "!{zippedFile}"
+        zcat "!{cosmicFile}" | bgzip -c -l 9 > "!{zippedFile}"
         """
 }
 
-process indexMutants
+process index
 {
     publishDir "${assemblyPath(genomeInfo)}/cosmic", mode: 'copy'
 
     input:
-        tuple val(genomeInfo), path(mutantsFile)
+        tuple val(genomeInfo), val(type), path(cosmicFile)
 
     output:
-        tuple val(genomeInfo), path("${mutantsFile.name}.tbi")
+        tuple val(genomeInfo), val(type), path("${cosmicFile.name}.tbi")
 
     shell:
         """
-        tabix "!{mutantsFile}"
-        """
-}
-
-// Non coding variants
-
-process fetchVariants
-{
-    label 'fetcher'
-
-    when:
-        genomeInfo.containsKey('url.cosmicnoncoding')
-
-    input:
-        val(genomeInfo)
-
-    output:
-        tuple val(genomeInfo), path(variantsFile)
-
-    shell:
-        variantsFile = "downloaded.gz"
-
-        """
-        python3 "${projectDir}/python/fetchCosmic.py" \
-            "!{genomeInfo['url.cosmicmutants']}" \
-            "!{variantsFile}"
-        """
-}
-
-process recompressVariants
-{
-    cpus 2
-
-    publishDir "${assemblyPath(genomeInfo)}/cosmic", mode: 'copy'
-
-    input:
-        tuple val(genomeInfo), path(variantsFile)
-
-    output:
-        tuple val(genomeInfo), path(zippedFile)
-
-    shell:
-        zippedFile = "${genomeInfo.base}.noncodingvariants.vcf.gz"
-
-        """
-        zcat "!{variantsFile}" | bgzip -c -l 9 > "!{zippedFile}"
-        """
-}
-
-process indexVariants
-{
-    publishDir "${assemblyPath(genomeInfo)}/cosmic", mode: 'copy'
-
-    input:
-        tuple val(genomeInfo), path(variantsFile)
-
-    output:
-        tuple val(genomeInfo), path("${variantsFile.name}.tbi")
-
-    shell:
-        """
-        tabix "!{variantsFile}"
+        tabix "!{cosmicFile}"
         """
 }
 
@@ -133,31 +82,20 @@ workflow cosmicWF
         genomeInfoChannel
 
     main:
-        mutantsChannel = genomeInfoChannel
+        types = channel.of('cosmicmutants', 'cosmicnoncoding')
+
+        fullChannel = genomeInfoChannel
+            .combine(types)
             .filter
             {
-                genomeInfo ->
+                genomeInfo, type ->
                 def cosmicBase = "${assemblyPath(genomeInfo)}/cosmic"
                 def requiredFiles = [
-                    "${cosmicBase}/${genomeInfo.base}.codingmutants.vcf.gz",
-                    "${cosmicBase}/${genomeInfo.base}.codingmutants.vcf.gz.tbi",
+                    "${cosmicBase}/${genomeInfo.base}.${filenamePart(type)}.vcf.gz",
+                    "${cosmicBase}/${genomeInfo.base}.${filenamePart(type)}.vcf.gz.tbi",
                 ]
                 return requiredFiles.any { !file(it).exists() }
             }
 
-        fetchMutants(mutantsChannel) | recompressMutants | indexMutants
-
-        variantsChannel = genomeInfoChannel
-            .filter
-            {
-                genomeInfo ->
-                def cosmicBase = "${assemblyPath(genomeInfo)}/cosmic"
-                def requiredFiles = [
-                    "${cosmicBase}/${genomeInfo.base}.noncodingvariants.vcf.gz",
-                    "${cosmicBase}/${genomeInfo.base}.noncodingvariants.vcf.gz.tbi",
-                ]
-                return requiredFiles.any { !file(it).exists() }
-            }
-
-        fetchVariants(variantsChannel) | recompressVariants | indexVariants
+        fetch(fullChannel) | recompress | index
 }

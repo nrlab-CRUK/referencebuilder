@@ -2,123 +2,63 @@
  * Pipeline to fetch and process DBSNP files.
  */
 
-include { assemblyPath; javaMemMB } from '../functions/functions'
+include { assemblyPath } from '../functions/functions'
 
-// SNP files
-
-process fetchSnps
+process fetch
 {
     label 'fetcher'
 
     when:
-        genomeInfo.containsKey('url.snps')
+        genomeInfo.containsKey("url.${type}" as String)
 
     input:
-        val(genomeInfo)
+        tuple val(genomeInfo), val(type)
 
     output:
-        tuple val(genomeInfo), path(snpFile)
+        tuple val(genomeInfo), val(type), path(dbsnpFile)
 
     shell:
-        snpFile = "downloaded.gz"
+        dbsnpFile = "downloaded.gz"
+        url = genomeInfo["url.${type}" as String]
 
         """
-        wget -O !{snpFile} "!{genomeInfo['url.snps']}"
+        wget -O !{dbsnpFile} "!{url}"
         """
 }
 
-process recompressSnps
+process recompress
 {
     cpus 2
 
     publishDir "${assemblyPath(genomeInfo)}/dbsnp", mode: 'copy'
 
     input:
-        tuple val(genomeInfo), path(snpFile)
+        tuple val(genomeInfo), val(type), path(dbsnpFile)
 
     output:
-        tuple val(genomeInfo), path(zippedFile)
+        tuple val(genomeInfo), val(type), path(zippedFile)
 
     shell:
-        zippedFile = "${genomeInfo.base}.snps.vcf.gz"
+        zippedFile = "${genomeInfo.base}.${type}.vcf.gz"
 
         """
-        zcat "!{snpFile}" | bgzip -c -l 9 > "!{zippedFile}"
+        zcat "!{dbsnpFile}" | bgzip -c -l 9 > "!{zippedFile}"
         """
 }
 
-process indexSnps
+process index
 {
     publishDir "${assemblyPath(genomeInfo)}/dbsnp", mode: 'copy'
 
     input:
-        tuple val(genomeInfo), path(snpFile)
+        tuple val(genomeInfo), val(type), path(dbsnpFile)
 
     output:
-        tuple val(genomeInfo), path("${snpFile.name}.tbi")
+        tuple val(genomeInfo), val(type), path("${dbsnpFile.name}.tbi")
 
     shell:
         """
-        tabix "!{snpFile}"
-        """
-}
-
-// Indel files
-
-process fetchIndels
-{
-    label 'fetcher'
-
-    when:
-        genomeInfo.containsKey('url.indels')
-
-    input:
-        val(genomeInfo)
-
-    output:
-        tuple val(genomeInfo), path(indelFile)
-
-    shell:
-        indelFile = "downloaded.blob"
-
-        """
-        wget -O !{indelFile} "!{genomeInfo['url.indels']}"
-        """
-}
-
-process recompressIndels
-{
-    cpus 2
-
-    publishDir "${assemblyPath(genomeInfo)}/dbsnp", mode: 'copy'
-
-    input:
-        tuple val(genomeInfo), path(indelFile)
-
-    output:
-        tuple val(genomeInfo), path(zippedFile)
-
-    shell:
-        zippedFile = "${genomeInfo.base}.indels.vcf.gz"
-
-        """
-        zcat "!{indelFile}" | bgzip -c -l 9 > "!{zippedFile}"
-        """
-}
-
-process indexIndels
-{
-    publishDir "${assemblyPath(genomeInfo)}/dbsnp", mode: 'copy'
-
-    input:
-        tuple val(genomeInfo), path(indelFile)
-
-    output:
-        tuple val(genomeInfo), path("${indelFile.name}.tbi")
-
-    shell:
-        """
-        tabix "!{indelFile}"
+        tabix "!{dbsnpFile}"
         """
 }
 
@@ -129,31 +69,20 @@ workflow dbsnpWF
         genomeInfoChannel
 
     main:
-        snpsChannel = genomeInfoChannel
+        types = channel.of('snps', 'indels')
+
+        fullChannel = genomeInfoChannel
+            .combine(types)
             .filter
             {
-                genomeInfo ->
+                genomeInfo, type ->
                 def dbsnpBase = "${assemblyPath(genomeInfo)}/dbsnp"
                 def requiredFiles = [
-                    "${dbsnpBase}/${genomeInfo.base}.snps.vcf.gz",
-                    "${dbsnpBase}/${genomeInfo.base}.snps.vcf.gz.tbi",
+                    "${dbsnpBase}/${genomeInfo.base}.${type}.vcf.gz",
+                    "${dbsnpBase}/${genomeInfo.base}.${type}.vcf.gz.tbi",
                 ]
                 return requiredFiles.any { !file(it).exists() }
             }
 
-        fetchSnps(snpsChannel) | recompressSnps | indexSnps
-
-        indelsChannel = genomeInfoChannel
-            .filter
-            {
-                genomeInfo ->
-                def dbsnpBase = "${assemblyPath(genomeInfo)}/dbsnp"
-                def requiredFiles = [
-                    "${dbsnpBase}/${genomeInfo.base}.indels.vcf.gz",
-                    "${dbsnpBase}/${genomeInfo.base}.indels.vcf.gz.tbi",
-                ]
-                return requiredFiles.any { !file(it).exists() }
-            }
-
-        fetchIndels(indelsChannel) | recompressIndels | indexIndels
+        fetch(fullChannel) | recompress | index
 }
