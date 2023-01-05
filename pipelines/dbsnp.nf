@@ -133,10 +133,10 @@ workflow dbsnpWF
             .filter
             {
                 genomeInfo ->
-                def snpBase = "${assemblyPath(genomeInfo)}/dbsnp"
+                def dbsnpBase = "${assemblyPath(genomeInfo)}/dbsnp"
                 def requiredFiles = [
-                    "${snpBase}/${genomeInfo.base}.snps.vcf.gz",
-                    "${snpBase}/${genomeInfo.base}.snps.vcf.gz.tbi",
+                    "${dbsnpBase}/${genomeInfo.base}.snps.vcf.gz",
+                    "${dbsnpBase}/${genomeInfo.base}.snps.vcf.gz.tbi",
                 ]
                 return requiredFiles.any { !file(it).exists() }
             }
@@ -147,10 +147,10 @@ workflow dbsnpWF
             .filter
             {
                 genomeInfo ->
-                def indelBase = "${assemblyPath(genomeInfo)}/dbsnp"
+                def dbsnpBase = "${assemblyPath(genomeInfo)}/dbsnp"
                 def requiredFiles = [
-                    "${indelBase}/${genomeInfo.base}.indels.vcf.gz",
-                    "${indelBase}/${genomeInfo.base}.indels.vcf.gz.tbi",
+                    "${dbsnpBase}/${genomeInfo.base}.indels.vcf.gz",
+                    "${dbsnpBase}/${genomeInfo.base}.indels.vcf.gz.tbi",
                 ]
                 return requiredFiles.any { !file(it).exists() }
             }
