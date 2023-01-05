@@ -10,6 +10,7 @@ include { fastaWF } from './pipelines/fasta'
 include { annotationWF } from './pipelines/annotation'
 include { geneNamesWF } from './pipelines/geneNames'
 include { bwamem2WF } from './pipelines/bwamem2'
+include { dbsnpWF } from './pipelines/dbsnp'
 
 workflow
 {
@@ -27,4 +28,5 @@ workflow
     annotationWF(genomeInfoChannel, setupWF.out)
     geneNamesWF(genomeInfoChannel)
     bwamem2WF(fastaWF.out.fastaChannel)
+    dbsnpWF(genomeInfoChannel)
 }
