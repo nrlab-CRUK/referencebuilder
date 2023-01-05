@@ -1,5 +1,6 @@
 package org.cruk.pipelines.referencegenomes;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.leftPad;
 import static org.apache.commons.lang3.StringUtils.upperCase;
@@ -21,6 +22,7 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cruk.common.compression.CompressionOutputStreamBuilder;
 import org.cruk.common.compression.CompressionUtils;
 
 import picocli.CommandLine;
@@ -32,12 +34,15 @@ import picocli.CommandLine.Parameters;
 @Command(name = "RecreateFasta",
          descriptionHeading = "Disassemble a FASTA reference file and recreated it with specific chromosomes or contigs in order.",
          mixinStandardHelpOptions = true,
-         description = "Supported compression methods are: " +
-                 CompressorStreamFactory.GZIP + ", " +
-                 CompressorStreamFactory.BZIP2 + ", " +
-                 CompressorStreamFactory.XZ + ", " +
-                 CompressorStreamFactory.PACK200 + ", " +
-                 CompressorStreamFactory.DEFLATE)
+         description = {
+                 "Supported compression methods are: ",
+                 CompressorStreamFactory.GZIP,
+                 CompressorStreamFactory.BZIP2,
+                 CompressorStreamFactory.XZ,
+                 CompressorStreamFactory.PACK200,
+                 CompressorStreamFactory.DEFLATE,
+                 EMPTY,
+                 "Compression level must be in the range 0-9 inclusive."})
 public class ConcatenateFiles implements Callable<Integer>
 {
     private static final Logger logger = LogManager.getLogger(ConcatenateFiles.class);
@@ -45,21 +50,29 @@ public class ConcatenateFiles implements Callable<Integer>
     @Option(names = { "-z", "--gzip" }, description = "Zip output as it a written (same as \"-j gz\").")
     boolean zip;
 
-    @Option(names = { "-c", "--checksum" }, paramLabel = "file", description = "Checksum file for the output.")
+    @Option(names = { "-c", "--checksum" }, paramLabel = "file",
+            description = "Checksum file for the output.")
     File checksumFile;
 
-    @Option(names = { "-o", "--output" }, paramLabel = "file", description = "File to write the output to.")
+    @Option(names = { "-o", "--output" }, paramLabel = "file",
+            description = "File to write the output to.")
     File outputFile;
 
-    @Option(names = { "-s", "--suffix" }, paramLabel = "text", description = "A suffix to trim off the output file name as it is printed in the checksum file.")
+    @Option(names = { "-s", "--suffix" }, paramLabel = "text",
+            description = "A suffix to trim off the output file name as it is printed in the checksum file.")
     String suffix;
 
     @Option(names = { "-a", "--algorithm" }, paramLabel = "name", defaultValue = "MD5",
             description =  "The checksum algorithm to use. Default is MD5.")
     String algorithm;
 
-    @Option(names = { "-j", "--compression" }, paramLabel = "algorithm", description = "The type of compression to use on the output.")
+    @Option(names = { "-j", "--compression" }, paramLabel = "algorithm",
+            description = "The type of compression to use on the output.")
     String compression;
+
+    @Option(names = { "-l", "--level" }, paramLabel = "0-9", defaultValue = "1",
+            description = "Compression level to use for those types that support it.")
+    int compressionLevel = 1;
 
     @Parameters
     List<File> inputFiles;
@@ -92,7 +105,11 @@ public class ConcatenateFiles implements Callable<Integer>
 
             out = outputFile != null ? new FileOutputStream(outputFile) : System.out;
 
-            out = CompressionUtils.addCompressionStream(out, largeBufferSize, compression, digest);
+            out = CompressionOutputStreamBuilder.newInstance()
+                    .withBufferSize(largeBufferSize)
+                    .withCompressionMethod(compression)
+                    .withCompressionLevel(compressionLevel)
+                    .addCompressionStream(out, digest);
 
             for (File f : inputFiles)
             {
@@ -144,7 +161,7 @@ public class ConcatenateFiles implements Callable<Integer>
         catch (NoSuchAlgorithmException e)
         {
             logger.error("'{}' is not a supported checksum algorithm.", algorithm);
-            logger.error("See https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#messagedigest-algorithms" +
+            logger.error("See https://docs.oracle.com/en/java/javase/17/docs/specs/security/standard-names.html#messagedigest-algorithms" +
                          " for the list of standard algorithms.");
             return ExitCode.SOFTWARE;
         }

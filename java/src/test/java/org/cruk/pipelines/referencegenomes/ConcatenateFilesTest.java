@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipParameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.FileWriterWithEncoding;
@@ -63,8 +64,11 @@ public class ConcatenateFilesTest
         files = new ArrayList<>(8);
         sb = new StringBuilder();
 
+        GzipParameters params = new GzipParameters();
+        params.setCompressionLevel(1);
+
         ByteArrayOutputStream zipByteStream = new ByteArrayOutputStream(8192);
-        OutputStream zipStream = new GzipCompressorOutputStream(zipByteStream);
+        OutputStream zipStream = new GzipCompressorOutputStream(zipByteStream, params);
 
         for (int i = 0; i < 8; i++)
         {
@@ -130,7 +134,7 @@ public class ConcatenateFilesTest
 
         assertArrayEquals(zipBytes, FileUtils.readFileToByteArray(outFile), "Concatenated file wrong");
 
-        assertEquals("f8e6bf47da8a3ecdf31f71ab6166cc21  cat.txt", FileUtils.readLines(checksumFile, UTF_8).get(0).toString(), "Concatenated file checksum wrong");
+        assertEquals("125869b9c990abdcc8b715476a5cb12d  cat.txt", FileUtils.readLines(checksumFile, UTF_8).get(0).toString(), "Concatenated file checksum wrong");
     }
 
     @Test
@@ -157,7 +161,7 @@ public class ConcatenateFilesTest
 
         assertArrayEquals(zipBytes, FileUtils.readFileToByteArray(outFile), "Concatenated file wrong");
 
-        assertEquals("f8e6bf47da8a3ecdf31f71ab6166cc21  cat.txt", FileUtils.readLines(checksumFile, UTF_8).get(0).toString(), "Concatenated file checksum wrong");
+        assertEquals("125869b9c990abdcc8b715476a5cb12d  cat.txt", FileUtils.readLines(checksumFile, UTF_8).get(0).toString(), "Concatenated file checksum wrong");
     }
 
     private void writeFile(File file, String toPrint) throws IOException
