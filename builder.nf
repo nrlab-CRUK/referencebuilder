@@ -12,6 +12,7 @@ include { geneNamesWF } from './pipelines/geneNames'
 include { bwamem2WF } from './pipelines/bwamem2'
 include { dbsnpWF } from './pipelines/dbsnp'
 include { cosmicWF } from './pipelines/cosmic'
+include { blacklistWF } from './pipelines/blacklist'
 
 workflow
 {
@@ -31,4 +32,5 @@ workflow
     bwamem2WF(fastaWF.out.fastaChannel)
     dbsnpWF(genomeInfoChannel)
     cosmicWF(genomeInfoChannel)
+    blacklistWF(genomeInfoChannel)
 }
