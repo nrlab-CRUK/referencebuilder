@@ -17,7 +17,8 @@ def readGenomeInfo(propsFile)
     // Add some derived information for convenience.
 
     genomeInfo['species'] = genomeInfo['name.scientific'].toLowerCase().replace(' ', '_')
-    genomeInfo['base'] = genomeInfo['abbreviation'] + '.' + genomeInfo['version']
+    // genomeInfo['base'] = genomeInfo['abbreviation'] + '.' + genomeInfo['version']
+    genomeInfo['base'] = genomeInfo['version']
 
     def transcriptUrl = genomeInfo['url.transcripts.fasta']
     genomeInfo['gencode'] = isNotEmpty(transcriptUrl) && transcriptUrl.startsWith("ftp://ftp.ebi.ac.uk/pub/databases/gencode");
